@@ -11,6 +11,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from audit.engine import audit
+from audit.model import Finding, SEVERITY_ORDER
 from harness.discovery import discover
 from harness.model import Inventory
 
@@ -18,16 +20,23 @@ OUTPUT_DIRNAME = ".claude/harness-audit"
 SCAFFOLD_MARKER = "harness-audit scaffold OK"
 
 
-def _summary_lines(inv: Inventory) -> list[str]:
+def _summary_lines(inv: Inventory, findings: list[Finding]) -> list[str]:
     gh = inv.global_harness
     gh_status = "present" if gh.exists else "missing"
     instrumented = inv.instrumented_count()
     total = len(inv.projects)
     roots = ", ".join(str(r) for r in inv.configured_roots) or "(none)"
+    counts: dict[str, int] = {sev: 0 for sev in SEVERITY_ORDER}
+    for f in findings:
+        counts[f.severity] += 1
+    severity_breakdown = ", ".join(
+        f"{sev}={counts[sev]}" for sev in SEVERITY_ORDER
+    )
     return [
         f"Global harness at {gh.root}: {gh_status} ({len(gh.artifacts)} artifacts)",
         f"Project roots scanned: {roots}",
         f"Projects found: {total} ({instrumented} instrumented, {total - instrumented} uninstrumented)",
+        f"Findings: {len(findings)} ({severity_breakdown})",
     ]
 
 
@@ -103,7 +112,8 @@ def main(argv: list[str] | None = None) -> int:
 
     roots = [Path(r).expanduser() for r in args.roots] if args.roots else None
     inventory = discover(project_roots=roots)
-    summary = _summary_lines(inventory)
+    findings = audit(inventory)
+    summary = _summary_lines(inventory, findings)
 
     now = datetime.now(timezone.utc).astimezone()
     timestamp_file = now.strftime("%Y%m%d-%H%M%S")
