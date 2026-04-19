@@ -12,13 +12,13 @@ A Claude Code skill (`harness-audit:report`) that scans a developer's Claude Cod
 
 ## Workflow
 
-This project uses GSD (`.planning/` directory). Key commands:
+This project uses GSD (`.planning/` directory). The flow is conceptual — Claude performs each step manually by reading `.planning/STATE.md` and the relevant phase folder. Key steps:
 
-- `/gsd-progress` — where are we, what's next
-- `/gsd-discuss-phase N` — gather context before planning a phase
-- `/gsd-plan-phase N` — create PLAN.md for a phase
-- `/gsd-execute-phase N` — execute the plan
-- `/gsd-verify-work` — validate phase outcomes
+- **Progress** — read `.planning/STATE.md` to see current phase and next action
+- **Discuss phase N** — gather context into `.planning/phases/0N-<name>/01-CONTEXT.md`
+- **Plan phase N** — write `.planning/phases/0N-<name>/02-PLAN.md` with decisions + file list
+- **Execute phase N** — implement the plan, verify on real fs + fixtures
+- **Verify work** — cross-check success criteria before marking phase complete
 
 Config defaults: coarse granularity, YOLO mode, balanced models, plan-check + verifier on.
 
@@ -29,6 +29,12 @@ Config defaults: coarse granularity, YOLO mode, balanced models, plan-check + ve
 - **Secrets redaction before render.** Any detected token/key is redacted in the `Finding` pipeline, before it can reach HTML or Markdown.
 - **Single-file outputs.** HTML has inline CSS and no external assets. Markdown is one file. Both share the same finding model.
 - **README first paragraph is the pitch.** Treat it as product copy, not documentation.
+- **`.claude-plugin/marketplace.json` is load-bearing.** Users install via `/plugin marketplace add <repo>` + `/plugin install <plugin>@<marketplace>`; without this file the repo is not installable. Validate with `claude plugin validate .` after any edit.
+
+## Code constraints
+
+- **Python 3.11+, stdlib-only.** No `requirements.txt`, no pip deps — `DIST-04` forbids a compile step. Solve it with stdlib or rethink.
+- **Absolute imports only** (e.g. `from harness.model import X`, not `from ..harness.model`). `cli.py` loads `harness/` and `audit/` as top-level packages; relative imports raise `ImportError: attempted relative import beyond top-level package`.
 
 ## Competitor landscape (2026-04)
 
