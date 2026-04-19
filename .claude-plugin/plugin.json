@@ -1,0 +1,8 @@
+{
+  "name": "harness-audit",
+  "description": "Audit your Claude Code harness across all projects — one HTML or Markdown report.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Vladyslav Zhuravel"
+  }
+}
