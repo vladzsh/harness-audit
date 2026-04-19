@@ -2,6 +2,8 @@
 
 **harness-audit** is a Claude Code plugin that scans every `.claude/` directory and `CLAUDE.md` on your machine and writes a single self-contained report — a beautiful HTML page or a functional Markdown file — showing what's configured, what's a security risk, and what to fix first. Install it, run it, open the file. Built for developers juggling many Claude Code projects.
 
+![harness-audit sample report](./docs/sample-report.png)
+
 ## Install
 
 Inside Claude Code, add the marketplace and install the plugin:
@@ -66,11 +68,13 @@ Findings that appear in multiple projects collapse to one entry with a merged sc
 
 ## Sample report
 
-Default output path:
+A sanitized sample lives at [`sample-report.html`](./sample-report.html) in this repo — clone or download the file and open it in a browser to preview the output (35 fictional projects, 8 findings across the four severity levels).
+
+Default output path for real runs:
 
 ```
-~/.claude/harness-audit/report-20260419-140933.html
-~/.claude/harness-audit/report-20260419-140933.md
+~/.claude/harness-audit/report-<timestamp>.html
+~/.claude/harness-audit/report-<timestamp>.md
 ```
 
 The HTML opens as a dark-themed dashboard: stat cards at the top (critical / high / medium / low counts), a top-5 action list, every finding rendered with evidence and a concrete fix, and a collapsible per-project drilldown at the bottom. The Markdown carries the same content in a plain, pipeable format.
