@@ -29,6 +29,11 @@ Where `$FORMAT` is `html` (default) or `markdown`.
 
 The script prints the absolute path of the generated report on stdout. Relay that path to the user so they can open it.
 
-## Current status
+## What the report contains
 
-This is the Phase 1 scaffold. It writes a placeholder report to prove end-to-end plumbing. Real discovery, audit, and rendering arrive in later phases.
+- Top-level summary: total projects scanned, instrumented vs uninstrumented count, findings by severity.
+- Top-5 recommendations, already sorted by severity.
+- Every finding rendered with scope (which projects), redacted evidence, rationale, and a concrete suggested fix.
+- Per-project drilldown: artifacts present and findings that apply to each project.
+
+All paths are normalized (`$HOME` → `~`) and any detected secret shapes are redacted before rendering, so the output is safe to share.

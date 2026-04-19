@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Single-plugin marketplace for harness-audit — the cross-project Claude Code harness auditor.",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "plugins": [
     {
@@ -15,7 +15,7 @@
         "repo": "vladzsh/harness-audit"
       },
       "description": "Scans every .claude/ directory and CLAUDE.md on your machine and writes a single self-contained HTML or Markdown report.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": {
         "name": "Vladyslav Zhuravel"
       },
