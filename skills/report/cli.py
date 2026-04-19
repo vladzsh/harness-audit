@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""harness-audit report CLI — Phase 1 scaffold.
+"""harness-audit report CLI.
 
-Writes a placeholder report to the real output location so downstream phases
-replace content, not plumbing. No discovery, no audit logic yet.
+Phase 2: invokes the read-only discovery walker and embeds an inventory
+summary into the placeholder report. Real rendering arrives in Phase 4.
 """
 from __future__ import annotations
 
@@ -11,11 +11,28 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from harness.discovery import discover
+from harness.model import Inventory
+
 OUTPUT_DIRNAME = ".claude/harness-audit"
 SCAFFOLD_MARKER = "harness-audit scaffold OK"
 
 
-def build_html(timestamp_iso: str) -> str:
+def _summary_lines(inv: Inventory) -> list[str]:
+    gh = inv.global_harness
+    gh_status = "present" if gh.exists else "missing"
+    instrumented = inv.instrumented_count()
+    total = len(inv.projects)
+    roots = ", ".join(str(r) for r in inv.configured_roots) or "(none)"
+    return [
+        f"Global harness at {gh.root}: {gh_status} ({len(gh.artifacts)} artifacts)",
+        f"Project roots scanned: {roots}",
+        f"Projects found: {total} ({instrumented} instrumented, {total - instrumented} uninstrumented)",
+    ]
+
+
+def build_html(timestamp_iso: str, summary: list[str]) -> str:
+    items = "\n".join(f"    <li>{line}</li>" for line in summary)
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -28,12 +45,16 @@ def build_html(timestamp_iso: str) -> str:
   .timestamp {{ color: #666; font-size: 0.9rem; }}
   .marker {{ margin-top: 2rem; padding: 1rem 1.25rem;
              background: #f4f4f5; border-left: 3px solid #0ea5e9; }}
+  ul.summary {{ margin-top: 1.5rem; padding-left: 1.25rem; line-height: 1.55; }}
 </style>
 </head>
 <body>
 <main>
   <h1>harness-audit — report</h1>
   <div class="timestamp">Generated: {timestamp_iso}</div>
+  <ul class="summary">
+{items}
+  </ul>
   <div class="marker">{SCAFFOLD_MARKER}</div>
 </main>
 </body>
@@ -41,10 +62,15 @@ def build_html(timestamp_iso: str) -> str:
 """
 
 
-def build_markdown(timestamp_iso: str) -> str:
+def build_markdown(timestamp_iso: str, summary: list[str]) -> str:
+    lines = "\n".join(f"- {line}" for line in summary)
     return f"""# harness-audit — report
 
 Generated: {timestamp_iso}
+
+## Summary
+
+{lines}
 
 {SCAFFOLD_MARKER}
 """
@@ -62,11 +88,22 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Output format (default: html). Both formats are always written; "
              "this flag selects which path is echoed as the primary report.",
     )
+    parser.add_argument(
+        "--roots",
+        action="append",
+        default=None,
+        metavar="PATH",
+        help="Project root to scan (repeatable). Default: ~/projects",
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
+
+    roots = [Path(r).expanduser() for r in args.roots] if args.roots else None
+    inventory = discover(project_roots=roots)
+    summary = _summary_lines(inventory)
 
     now = datetime.now(timezone.utc).astimezone()
     timestamp_file = now.strftime("%Y%m%d-%H%M%S")
@@ -83,8 +120,8 @@ def main(argv: list[str] | None = None) -> int:
     md_path = output_dir / f"report-{timestamp_file}.md"
 
     try:
-        html_path.write_text(build_html(timestamp_iso), encoding="utf-8")
-        md_path.write_text(build_markdown(timestamp_iso), encoding="utf-8")
+        html_path.write_text(build_html(timestamp_iso, summary), encoding="utf-8")
+        md_path.write_text(build_markdown(timestamp_iso, summary), encoding="utf-8")
     except OSError as exc:
         print(f"harness-audit: cannot write report: {exc}", file=sys.stderr)
         return 2
