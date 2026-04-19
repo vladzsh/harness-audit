@@ -1,0 +1,29 @@
+{
+  "name": "harness-audit",
+  "owner": {
+    "name": "Vladyslav Zhuravel"
+  },
+  "metadata": {
+    "description": "Single-plugin marketplace for harness-audit — the cross-project Claude Code harness auditor.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "harness-audit",
+      "source": {
+        "source": "github",
+        "repo": "vladzsh/harness-audit"
+      },
+      "description": "Scans every .claude/ directory and CLAUDE.md on your machine and writes a single self-contained HTML or Markdown report.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Vladyslav Zhuravel"
+      },
+      "homepage": "https://github.com/vladzsh/harness-audit",
+      "repository": "https://github.com/vladzsh/harness-audit",
+      "license": "MIT",
+      "keywords": ["audit", "harness", "claude-code", "cross-project", "security"],
+      "category": "observability"
+    }
+  ]
+}

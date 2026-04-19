@@ -4,10 +4,11 @@
 
 ## Install
 
-Once the repo is published on GitHub:
+Inside Claude Code, add the marketplace and install the plugin:
 
 ```
-/plugin install harness-audit@https://github.com/vladzsh/harness-audit
+/plugin marketplace add vladzsh/harness-audit
+/plugin install harness-audit@harness-audit
 ```
 
 Local development — clone and point Claude Code at the directory:
